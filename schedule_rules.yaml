@@ -1,0 +1,42 @@
+# Maintenance schedule rules for 2018 Toyota Camry (customize as needed).
+rules:
+- key: tire_rotation
+match: ["tire rotation", "rotate tires", "rotation"]
+miles_interval: 5000
+months_interval: 6
+note: "Rotate tires & check pressures."
+- key: oil_change
+match: ["oil & filter", "oil change", "engine oil", "oil and filter"]
+miles_interval: 10000
+months_interval: 12
+note: "0W-20 synthetic; adjust to 5k/6mo for severe duty."
+- key: cabin_filter
+match: ["cabin filter", "cabin air filter"]
+miles_interval: 15000
+months_interval: 18
+note: "Replace sooner in dusty/allergy seasons."
+- key: engine_air
+match: ["engine air filter", "air filter (engine)", "engine air"]
+miles_interval: 30000
+months_interval: 36
+note: "Inspect every 10k."
+- key: brake_fluid
+match: ["brake fluid", "brake flush"]
+miles_interval: 0
+months_interval: 36
+note: "Moisture-based; time-driven."
+- key: coolant_initial
+match: ["coolant", "antifreeze", "engine coolant"]
+miles_interval: 100000
+months_interval: 120
+note: "First interval ~100k/10yr; subsequent ~50k/5yr. Adjust if already flushed."
+- key: spark_plugs
+match: ["spark plug"]
+miles_interval: 120000
+months_interval: 0
+note: "Denso/NGK iridium; inspect coils if misfire."
+- key: transmission_inspect
+match: ["transmission", "trans service", "atf", "gearbox"]
+miles_interval: 60000
+months_interval: 0
+note: "Conservative inspect/flush interval; Toyota often says 'inspect'. Adjust to your preference."
