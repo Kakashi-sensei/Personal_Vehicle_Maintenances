@@ -1,0 +1,89 @@
+
+# 2018 Toyota Camry — Schedule rules derived from Toyota's Warranty & Maintenance Guide.
+# Source highlights:
+# - Maintenance every 5,000 miles or 6 months, whichever comes first.
+# - 5,000 mi/6 mo: rotate tires; inspections.
+# - 10,000 mi/12 mo: replace engine oil & filter; replace cabin air filter; rotate tires.
+# - 30,000 mi/36 mo: replace engine air filter (+ oil/filter & cabin per the log for that interval).
+# - Engine coolant: first replacement at 100,000 mi / 120 months; then every 50,000 mi / 60 months.
+#
+# Each rule has:
+#   key: unique id
+#   match: list of keywords to detect from your "service" text in cardata.csv
+#   miles_interval / months_interval: interval for next service
+#   trigger: 'earliest' (whichever comes first) or 'mileage_only'
+#   note: shows in the app
+#
+vehicle_name: 2018 Toyota Camry
+rules:
+  - key: tire_rotation
+    label: "Tire Rotation"
+    match: ["tire rotation", "rotate tires", "rotation"]
+    miles_interval: 5000
+    months_interval: 6
+    trigger: earliest
+    note: "Toyota log at 5k/6mo — rotate tires and inspect brakes/fluids."
+
+  - key: oil_change
+    label: "Oil Change"
+    match: ["oil & filter", "oil change", "engine oil", "oil and filter"]
+    miles_interval: 10000
+    months_interval: 12
+    trigger: earliest
+    note: "Toyota log at 10k/12mo — replace engine oil & filter. Special Operating Conditions may shorten to ~5k/6mo."
+
+  - key: brake_fluid
+    label: "Brake Fluid Change"
+    match: ["brake fluid", "brake fluid change", "brake flush"]
+    miles_interval: 0
+    months_interval: 36
+    trigger: earliest
+    note: "Toyota recommends brake fluid replacement every 36 months regardless of mileage"
+  
+  - key: transmission_fluid
+    label: "Transmission Fluid Change"
+    match: ["transmission fluid", "transmission fluid change", "atf"]
+    miles_interval: 60000
+    months_interval: 0
+    trigger: mileage_only
+    note: "Inspect ATF every 60k miles; replace if dirty. Some owners prefer replacement at 60k–100k as preventive."   
+
+  - key: cabin_filter
+    label: "Cabin Filter Change"
+    match: ["cabin filter", "cabin air filter"]
+    miles_interval: 10000
+    months_interval: 12
+    trigger: earliest
+    note: "Toyota log at 10k/12mo — replace cabin air filter."
+
+  - key: engine_air
+    label: "Engine Air Filter Change"
+    match: ["engine air filter", "air filter (engine)", "engine air"]
+    miles_interval: 30000
+    months_interval: 36
+    trigger: earliest
+    note: "Toyota log at 30k/36mo — replace engine air filter."
+
+  - key: coolant_initial
+    label: "Collant Flush and Change"
+    match: ["coolant", "antifreeze", "engine coolant", "coolant flush"]
+    miles_interval: 100000
+    months_interval: 120
+    trigger: earliest
+    note: "First replacement 100k/120mo; then every 50k/60mo thereafter."
+
+  - key: coolant_subsequent
+    label: "Collant Change"
+    match: ["coolant", "antifreeze", "engine coolant", "coolant flush"]
+    miles_interval: 50000
+    months_interval: 60
+    trigger: earliest
+    note: "Subsequent coolant replacements every 50k/60mo after the initial service."
+
+  - key: spark_plugs
+    label: "Spark Plugs Change"
+    match: ["spark plug", "spark plugs"]
+    miles_interval: 120000
+    months_interval: 144
+    trigger: mileage_only
+    note: "Typical I4 interval ~120k miles; see emissions warranty notes."
