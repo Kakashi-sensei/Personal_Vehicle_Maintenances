@@ -87,3 +87,11 @@ rules:
     months_interval: 144
     trigger: mileage_only
     note: "Typical I4 interval ~120k miles; see emissions warranty notes."
+  
+  - key: multipoint_inspection
+    label: "multpoint inspection"
+    match: ["inspection", "multi-point inspection", "check fluids"]
+    miles_interval: 5000
+    months_interval: 6
+    trigger: earliest
+    note: "General inspection: brakes, hoses, belts, wipers, fluids (Toyota log every 5k/6mo)."
