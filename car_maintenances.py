@@ -1,13 +1,15 @@
-import os
 import tkinter as tk
 from tkinter import ttk, messagebox
+from tkinter import font as tkfont
 from pathlib import Path
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import pandas as pd
 import yaml
 
-# File paths
+APP_TITLE = "Car Maintenances"
+
+# Single-vehicle files (adjust names if you change them)
 DATA_FILE = Path("2018_Camry_data.csv")
 RULES_FILE = Path("2018_Camry_schedule_rules.yaml")
 
@@ -24,8 +26,13 @@ def parse_date_us(s):
 def load_rules():
     if not RULES_FILE.exists():
         messagebox.showerror("Rules Missing", f"Could not find {RULES_FILE}")
-        return {"vehicle_name": "Unknown", "rules": []}
+        return {"vehicle_name": "Unknown Vehicle", "rules": []}
     data = yaml.safe_load(RULES_FILE.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        messagebox.showerror("Rules Error", "Rules file must be a YAML mapping with vehicle_name and rules.")
+        return {"vehicle_name": "Unknown Vehicle", "rules": []}
+    data.setdefault("vehicle_name", "Unknown Vehicle")
+    data.setdefault("rules", [])
     return data
 
 def normalize_services(df):
@@ -51,6 +58,7 @@ def compute_next_due(df, current_mileage, today, rules):
         miles_int = int(rule.get("miles_interval",0) or 0)
         months_int = int(rule.get("months_interval",0) or 0)
         trigger = str(rule.get("trigger","earliest")).lower()
+        label = rule.get("label", rule.get("key", "Unnamed"))
         last = last_event_for_rule(df, rule)
 
         due_mileage, due_date = None, None
@@ -62,8 +70,10 @@ def compute_next_due(df, current_mileage, today, rules):
             if months_int>0 and last_date is not None and trigger!="mileage_only":
                 due_date = last_date + relativedelta(months=+months_int)
         else:
-            if miles_int>0: due_mileage = miles_int
-            if months_int>0 and trigger!="mileage_only": due_date = today
+            if miles_int>0: 
+                due_mileage = miles_int
+            if months_int>0 and trigger!="mileage_only": 
+                due_date = today
 
         miles_until = None if due_mileage is None else int(due_mileage - current_mileage)
         days_until = None if due_date is None else (due_date - today).days
@@ -72,7 +82,7 @@ def compute_next_due(df, current_mileage, today, rules):
         status = "OVERDUE" if overdue else "upcoming"
 
         results.append({
-            "label": rule.get("label", rule.get("key")),
+            "label": label,
             "note": rule.get("note",""),
             "last_service": last["service_text"] if last else "(none)",
             "last_date": last.get("date") if last else None,
@@ -92,15 +102,16 @@ class App(tk.Tk):
         self.vehicle_name = self.rules_data.get("vehicle_name","Unknown Vehicle")
         self.rules = self.rules_data.get("rules",[])
 
-        self.title(f"Car Maintenances — {self.vehicle_name}")
-        self.geometry("900x600")
+        self.title(f"{APP_TITLE} — {self.vehicle_name}")
+        self.geometry("980x680")
+        self.minsize(820, 520)
 
-        # Mileage entry
+        # Top bar
         top = ttk.Frame(self, padding=8)
         top.pack(fill="x")
         ttk.Label(top, text="Current Mileage:").pack(side="left")
         self.mileage_var = tk.StringVar()
-        ttk.Entry(top, textvariable=self.mileage_var, width=10).pack(side="left", padx=4)
+        ttk.Entry(top, textvariable=self.mileage_var, width=10).pack(side="left", padx=5)
         ttk.Button(top, text="Compute Reminders", command=self.compute).pack(side="left", padx=6)
 
         # Add record
@@ -111,63 +122,94 @@ class App(tk.Tk):
         self.rec_miles_var = tk.StringVar()
         self.service_var = tk.StringVar()
 
-        ttk.Label(mid, text="Date:").grid(row=0,column=0,padx=4)
-        ttk.Entry(mid, textvariable=self.date_var, width=12).grid(row=0,column=1)
-        ttk.Label(mid, text="Mileage:").grid(row=0,column=2,padx=4)
-        ttk.Entry(mid, textvariable=self.rec_miles_var, width=10).grid(row=0,column=3)
-        ttk.Label(mid, text="Service:").grid(row=0,column=4,padx=4)
+        ttk.Label(mid, text="Date (MM/DD/YYYY):").grid(row=0, column=0, sticky="w", padx=4, pady=2)
+        ttk.Entry(mid, textvariable=self.date_var, width=14).grid(row=0, column=1, padx=4, pady=2)
+        ttk.Label(mid, text="Mileage:").grid(row=0, column=2, sticky="w", padx=4, pady=2)
+        ttk.Entry(mid, textvariable=self.rec_miles_var, width=10).grid(row=0, column=3, padx=4, pady=2)
+        ttk.Label(mid, text="Service:").grid(row=0, column=4, sticky="w", padx=4, pady=2)
 
-        labels = [r.get("label",r.get("key")) for r in self.rules]
+        labels = [r.get("label", r.get("key","")) for r in self.rules]
         self.service_combo = ttk.Combobox(mid, textvariable=self.service_var, values=labels, state="readonly", width=40)
-        self.service_combo.grid(row=0,column=5)
-        ttk.Button(mid, text="Add", command=self.add_record).grid(row=0,column=6,padx=4)
+        self.service_combo.grid(row=0, column=5, padx=4, pady=2)
+        ttk.Button(mid, text="Add Record", command=self.add_record).grid(row=0, column=6, padx=6, pady=2)
 
-        # Output box
+        # Output
         out = ttk.LabelFrame(self, text="Reminders", padding=8)
         out.pack(fill="both", expand=True, padx=8, pady=8)
-        self.text = tk.Text(out, wrap="word")
+
+        # Larger font for report
+        self.report_font = tkfont.Font(family="Segoe UI", size=12)  # bigger font
+        self.text = tk.Text(out, wrap="word", font=self.report_font)
         self.text.pack(fill="both", expand=True)
+
+        # Configure color tags
+        self.text.tag_config("OVERDUE", background="#c62828", foreground="white")   # red
+        self.text.tag_config("upcoming", background="#fff59d", foreground="black") # yellow
 
         ensure_data()
 
     def add_record(self):
-        d, m, s = self.date_var.get().strip(), self.rec_miles_var.get().strip(), self.service_var.get().strip()
+        d = self.date_var.get().strip()
+        m = self.rec_miles_var.get().strip()
+        s = self.service_var.get().strip()
         if not d or not m or not s:
-            messagebox.showwarning("Missing","Fill all fields")
+            messagebox.showwarning("Missing info", "Please fill Date, Mileage, and Service.")
             return
         if parse_date_us(d) is None:
-            messagebox.showwarning("Bad date","Use MM/DD/YYYY")
+            messagebox.showwarning("Bad date", "Date must be MM/DD/YYYY.")
             return
-        try: m_val = float(m)
-        except: 
-            messagebox.showwarning("Bad mileage","Enter a number")
+        try:
+            m_val = float(m)
+        except Exception:
+            messagebox.showwarning("Bad mileage", "Mileage must be a number.")
             return
-        df = pd.read_csv(DATA_FILE)
-        df.loc[len(df)] = {"date":d,"mileage":m_val,"service":s}
-        df.to_csv(DATA_FILE,index=False)
-        messagebox.showinfo("Saved", f"Added: {d} | {m_val} mi | {s}")
+
+        df = pd.read_csv(DATA_FILE) if DATA_FILE.exists() else pd.DataFrame(columns=["date","mileage","service"])
+        df.loc[len(df)] = {"date": d, "mileage": m_val, "service": s}
+        df.to_csv(DATA_FILE, index=False)
+        messagebox.showinfo("Added", f"Saved: {d} | {m_val} mi | {s}")
         self.rec_miles_var.set(""); self.service_var.set("")
 
     def compute(self):
-        try: cur_mi = float(self.mileage_var.get())
-        except: 
-            messagebox.showwarning("Mileage needed","Enter current mileage")
+        cur = self.mileage_var.get().strip()
+        if not cur:
+            messagebox.showwarning("Mileage needed", "Enter your current mileage first.")
             return
-        df = pd.read_csv(DATA_FILE)
+        try:
+            current_mileage = float(cur)
+        except Exception:
+            messagebox.showwarning("Bad mileage", "Current mileage must be a number.")
+            return
+
+        df = pd.read_csv(DATA_FILE) if DATA_FILE.exists() else pd.DataFrame(columns=["date","mileage","service"])
         df = normalize_services(df)
-        rows = compute_next_due(df, cur_mi, date.today(), self.rules)
+        today = date.today()
+        rows = compute_next_due(df, current_mileage, today, self.rules)
+
         self.text.delete("1.0", tk.END)
-        self.text.insert(tk.END, f"{self.vehicle_name} — Maintenance Reminders\n")
-        self.text.insert(tk.END, f"Today: {date.today().strftime('%m/%d/%Y')} | Odometer: {int(cur_mi)} mi\n")
-        self.text.insert(tk.END, "-"*70+"\n")
+        header = f"{self.rules_data.get('vehicle_name','Unknown Vehicle')} — Maintenance Reminders\n" \
+                 f"Today: {today.strftime('%m/%d/%Y')} | Odometer: {int(current_mileage)} mi\n" \
+                 + "-"*72 + "\n"
+        self.text.insert(tk.END, header)
+
         for r in rows:
-            due = []
-            if r["due_mileage"]: due.append(f"due @ {int(r['due_mileage'])} mi (in {r['miles_until']} mi)")
-            if r["due_date"]: due.append(f"due by {r['due_date']} (in {r['days_until']} days)")
-            if not due: due.append("no due info")
-            self.text.insert(tk.END, f"[{r['status']}] {r['label']}: " + "; ".join(due) + "\n")
+            due_bits = []
+            if r["due_mileage"] is not None:
+                due_bits.append(f"due @ {int(r['due_mileage'])} mi (in {r['miles_until']} mi)")
+            if r["due_date"] is not None:
+                due_bits.append(f"due by {r['due_date']} (in {r['days_until']} days)")
+            if not due_bits:
+                due_bits.append("no due info")
+
+            status_line = f"[{r['status']}] {r['label']}: " + "; ".join(due_bits) + "\n"
+            start_idx = self.text.index(tk.INSERT)
+            self.text.insert(tk.END, status_line)
+            end_idx = self.text.index(tk.INSERT)
+            tag_name = "OVERDUE" if r["status"] == "OVERDUE" else "upcoming"
+            self.text.tag_add(tag_name, start_idx, end_idx)
+
             self.text.insert(tk.END, f"  last: {r['last_service']} on {r['last_date']} @ {r['last_mileage']} mi\n")
             self.text.insert(tk.END, f"  note: {r['note']}\n\n")
 
-if __name__=="__main__":
+if __name__ == "__main__":
     App().mainloop()
