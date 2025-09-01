@@ -1,0 +1,93 @@
+vehicle_name: 2020 Toyota Sienna SE FWD
+rules:
+  - key: tire_rotation
+    label: "Tire Rotation"
+    match: ["tire rotation", "rotate tires", "rotation", "tire replacement", "tires replaced", "four tires replaced"]
+    miles_interval: 5000
+    months_interval: 6
+    trigger: earliest
+    # Baseline: new set of tires installed, reset rotation schedule
+    baseline_date: "08/27/2025"
+    baseline_mileage: 16487
+    note: "Rotate tires every 5k/6mo; baseline set to the 4-tire replacement."
+
+  - key: oil_change
+    label: "Oil & Filter Change"
+    match: ["oil & filter", "oil change", "engine oil", "oil and filter"]
+    miles_interval: 5000
+    months_interval: 6
+    trigger: earliest
+    note: "Toyota allows 10k/12mo with 0W-20; many prefer 5k/6mo."
+
+  - key: brake_fluid
+    label: "Brake Fluid Change"
+    match: ["brake fluid", "brake fluid change", "brake flush"]
+    miles_interval: 0
+    months_interval: 36
+    trigger: earliest
+    note: "Replace every 3 years regardless of mileage."
+
+  - key: transmission_fluid
+    label: "Transmission Fluid Drain & Fill"
+    match: ["transmission fluid", "trans fluid", "atf", "trans flush", "drain & fill", "drain and fill"]
+    miles_interval: 50000
+    months_interval: 60
+    trigger: earliest
+    # Baseline: in-service date
+    baseline_date: "07/30/2020"
+    baseline_mileage: 5
+    note: "Conservative drain & fill every ~40–60k or 5 years."
+
+  - key: cabin_filter
+    label: "Cabin Filter Replacement"
+    match: ["cabin filter", "cabin air filter"]
+    miles_interval: 10000
+    months_interval: 12
+    trigger: earliest
+    note: "Replace every 10k/12mo (sooner in dusty/pollen conditions)."
+
+  - key: engine_air
+    label: "Engine Air Filter Replacement"
+    match: ["engine air filter", "air filter (engine)", "engine air", "replace engine air filter"]
+    miles_interval: 30000
+    months_interval: 36
+    trigger: earliest
+    # Baseline: in-service date
+    baseline_date: "07/30/2020"
+    baseline_mileage: 5
+    note: "Replace ~30k/36mo; check every 10k."
+
+  - key: coolant_initial
+    label: "Coolant Flush (Initial)"
+    match: ["coolant", "antifreeze", "engine coolant", "coolant flush", "factory fill"]
+    miles_interval: 100000
+    months_interval: 120
+    trigger: earliest
+    # Baseline: in-service date / factory fill
+    baseline_date: "07/30/2020"
+    baseline_mileage: 5
+    note: "First at 100k/120mo; some prefer ~60k/5y."
+
+  - key: coolant_subsequent
+    label: "Coolant Change (Subsequent)"
+    match: ["coolant", "antifreeze", "engine coolant", "coolant flush"]
+    miles_interval: 50000
+    months_interval: 60
+    trigger: earliest
+    note: "Every 50k/60mo after initial."
+
+  - key: spark_plugs
+    label: "Spark Plug Replacement"
+    match: ["spark plug", "spark plugs"]
+    miles_interval: 120000
+    months_interval: 144
+    trigger: mileage_only
+    note: "Iridium ~120k; check earlier if misfire/rough idle."
+
+  - key: multipoint_inspection
+    label: "Multi-point Inspection"
+    match: ["inspection", "multi-point inspection", "check fluids"]
+    miles_interval: 5000
+    months_interval: 6
+    trigger: earliest
+    note: "Every 5k/6mo: brakes, belts, hoses, suspension, wipers, all fluids."
