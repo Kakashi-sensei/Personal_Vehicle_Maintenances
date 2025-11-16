@@ -28,7 +28,7 @@ rules:
     label: "Oil Change"
     match: ["oil & filter", "oil change", "engine oil", "oil and filter"]
     miles_interval: 5000
-    months_interval: 12
+    months_interval: 6
     trigger: earliest
     note: "Toyota log at 10k/12mo — replace engine oil & filter. Special Operating Conditions may shorten to ~5k/6mo."
 
@@ -43,9 +43,9 @@ rules:
   - key: transmission_fluid
     label: "Transmission Fluid Change"
     match: ["transmission fluid", "transmission fluid change", "atf"]
-    miles_interval: 50000
-    months_interval: 0
-    trigger: mileage_only
+    miles_interval: 60000
+    months_interval: 72
+    trigger: earliest
     note: "Inspect ATF every 60k miles; replace if dirty. Some owners prefer replacement at 60k–100k as preventive."   
 
   - key: cabin_filter
@@ -95,3 +95,11 @@ rules:
     months_interval: 6
     trigger: earliest
     note: "General inspection: brakes, hoses, belts, wipers, fluids (Toyota log every 5k/6mo)."
+    
+  - key: timing_belt
+    label: "Ctiming belt replace"
+    match: ["time belt"]
+    miles_interval: 90000
+    months_interval: 120
+    trigger: earliest
+    note: "10 years should replace timing belt"
