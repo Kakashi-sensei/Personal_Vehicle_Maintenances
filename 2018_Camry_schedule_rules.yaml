@@ -97,7 +97,7 @@ rules:
     note: "General inspection: brakes, hoses, belts, wipers, fluids (Toyota log every 5k/6mo)."
     
   - key: timing_belt
-    label: "Ctiming belt replace"
+    label: "timing belt replace"
     match: ["time belt"]
     miles_interval: 90000
     months_interval: 120
